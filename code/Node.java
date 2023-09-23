@@ -1,3 +1,5 @@
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 
@@ -10,7 +12,7 @@ class Node {
     String address;
     String balance;
     String hash;
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    
 
     //Sets address balance and hash
     public Node(String address, String balance){
@@ -25,21 +27,36 @@ class Node {
     //Referenced https://www.geeksforgeeks.org/sha-256-hash-in-java/
     //takes a string and uses SHA-256 to hash
     public static String hash(String s){
-        byte[] bytes = md.digest(s.getBytes(StandardCharsets.UTF_8))
 
-        //convert the bytes to signum representation
-        BigInteger number = new BigInteger(1, bytes);
 
-        // Convert message digest into hex value
-        StringBuilder hexString = new StringBuilder(number.toString(16));
- 
-        // Pad with leading zeros
-        while (hexString.length() < 64)
-        {
-            hexString.insert(0, '0');
+        MessageDigest md;
+        try{
+            md = MessageDigest.getInstance("SHA-256");
+        
+            byte[] bytes = md.digest(s.getBytes(StandardCharsets.UTF_8));
+
+            //convert the bytes to signum representation
+            BigInteger number = new BigInteger(1, bytes);
+
+            // Convert message digest into hex value
+            StringBuilder hexString = new StringBuilder(number.toString(16));
+    
+            // Pad with leading zeros
+            while (hexString.length() < 64)
+            {
+                hexString.insert(0, '0');
+            }
+            //return hash
+            return hexString.toString();
+            
+        }catch(Exception e){
+            System.out.println("error making instance from messgae digest: " + e);
+            return s;
         }
-        //return hash
-        return hexString.toString();
+
+        
+
+        
 
 
     }
