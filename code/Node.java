@@ -127,6 +127,7 @@ class MerkleRoot{
 
         while(leafNodes.size() > 1){ //while there is more than one node in the leaf nodes 
             //for each node in the leaf nodes
+           // System.out.println(leafNodes.size());
             for(int i = 0; i < leafNodes.size(); i+=2){
 
                 //if there is another node after the current node
@@ -172,7 +173,7 @@ class MerkleRoot{
             parentNodes = new ArrayList<Node>(); //make a new arraylist for the parent nodes
 
         }   
-        return parentNodes.get(0); //return the root
+        return leafNodes.get(0); //return the root
 
  
     }
