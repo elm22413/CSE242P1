@@ -201,13 +201,15 @@ public class Block {
 
             //create the output file name
             try{
-                //create the output file
+                //create the output file using the input file name and replacing .txt with .block.out
                 String outputFileName = inputFiles[i].substring(0, inputFiles[i].length() - 4) + ".block.out";
+                //make sure its correct
                 System.out.println("Output file name: " + outputFileName);
+                //write to the file
                 FileWriter writer = new FileWriter(outputFileName);
-                writer.write("test");
+                writer.write("test"); //test
                 block.printBlock(false);
-                writer.close();
+                writer.close(); //close the writer
 
 
             }catch(Exception e){
