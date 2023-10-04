@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Block {
 
@@ -23,7 +24,7 @@ public class Block {
     Map<String, String> map;
 
     //Header
-    String header;
+    static String header;
 
 
     public Block(String prevHeader, String root, Integer difficultyTarget, String inputFileName){
@@ -52,7 +53,7 @@ public class Block {
     
     }
 
-    public String getHeader(){
+    public static String getHeader(){
         return header;
     }
 
@@ -128,6 +129,68 @@ public class Block {
 
         return map;
     }
+
+    //Print the block
+    //Your tree structure should include a print function, and that function must take a parameter to print or not print the full account ledger (this may be useful for your testing now and later on).
+    public void printBlock(boolean printLedger){
+        System.out.println("BEGIN BLOCK");
+        System.out.println("BEGIN HEADER:");
+        
+        System.out.println("Previous Header: " + prevHeader);
+        System.out.println("Merkle Root: " + root);
+        System.out.println("Timestamp: " + timeStamp);
+        System.out.println("Difficulty Target: " + difficultyTarget);
+        System.out.println("Nonce: " + nonce);
+        System.out.println("END HEADER");
+
+        if (printLedger){
+            System.out.println("Ledger: " + map);
+        }
+        
+        System.out.println("END BLOCK");
+        System.out.println("");
+    }
+
+
+    public static void main(String[] args) throws Exception {
+
+        //create a block
+        //If the first input file was X.txt, the output file must be named X.block.out and contains the list of blocks starting with the last block in the specified print format and showing the complete address/balance list.
+
+        
+        //prompt for sequence of file names where the file contains the input for one block in the format
+       
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter the names of the input file: ");
+        String inputFileName = scan.nextLine();
+
+        //break up each file names into an array of strings
+        String[] inputFiles = inputFileName.split(" ");
+
+        //for each file name in the array, create a block
+        for (int i = 0; i < inputFiles.length; i++){
+            //get the previous header
+            String prevHeader = getHeader();
+
+            //get the root
+            String root = run.main(inputFiles[i]); //not doing rihgt, how do i get this
+
+
+            //create the block
+            Block block = new Block(prevHeader, "0", 8, inputFiles[i]);
+            //print the block
+            block.printBlock(true);
+
+            //create the output file name
+            String outputFileName = inputFiles[i].substring(0, inputFiles[i].length() - 4) + ".block.out";
+            System.out.println("Output file name: " + outputFileName);
+        }
+
+
+       
+    
+    }
+
 
 }
 
