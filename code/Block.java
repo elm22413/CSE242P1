@@ -1,8 +1,10 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -151,6 +153,22 @@ public class Block {
         System.out.println("");
     }
 
+    //helper fucntuon to get the merkle root of the input file
+    public static String getMerkleRoot(String filename) throws Exception{
+        // read input inot a map
+        Map<String, String> map = MerkleRoot.InputToMap(filename);
+        // leafnode arrayList
+        ArrayList<Node> leafNode = MerkleRoot.LeafNodes(map);
+        // get merkle tree and find the merkle root
+        Node merkleRoot = MerkleRoot.getMerkleRoot(leafNode);
+        
+        // check output
+        System.out.println("Merkle Root Hash: " + merkleRoot.hash);
+        
+        return merkleRoot.hash;
+
+    }
+
 
     public static void main(String[] args) throws Exception {
 
@@ -173,18 +191,38 @@ public class Block {
             String prevHeader = getHeader();
 
             //get the root
-            String root = run.main(inputFiles[i]); //not doing rihgt, how do i get this
+            String root = getMerkleRoot(inputFiles[i]); 
 
 
             //create the block
-            Block block = new Block(prevHeader, "0", 8, inputFiles[i]);
+            Block block = new Block(prevHeader, root, 8, inputFiles[i]);
             //print the block
             block.printBlock(true);
 
             //create the output file name
-            String outputFileName = inputFiles[i].substring(0, inputFiles[i].length() - 4) + ".block.out";
-            System.out.println("Output file name: " + outputFileName);
+            try{
+                //create the output file
+                String outputFileName = inputFiles[i].substring(0, inputFiles[i].length() - 4) + ".block.out";
+                System.out.println("Output file name: " + outputFileName);
+                FileWriter writer = new FileWriter(outputFileName);
+                writer.write("test");
+                block.printBlock(false);
+                writer.close();
+
+
+            }catch(Exception e){
+                System.out.println("There was an error while writing to the file: " + e);
+            }
+            
+            
+
+
         }
+
+        scan.close();
+
+
+
 
 
        
