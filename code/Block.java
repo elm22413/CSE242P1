@@ -200,8 +200,8 @@ public class Block {
 
                 // Write to the file
                 FileWriter writer = new FileWriter(outputFileName);
-                writer.write("test"); // You can replace this with the actual block information
-                block.printBlock(false);
+                String blockInfo = block.getBlockInfo(false); // Get the block info as a string
+                writer.write(blockInfo);
                 writer.close(); // Close the writer
             } catch (Exception e) {
                 System.out.println("There was an error while writing to the file: " + e);
@@ -210,4 +210,22 @@ public class Block {
 
         scan.close();
     }
+
+    public String getBlockInfo(boolean printLedger) {
+        StringBuilder blockInfo = new StringBuilder();
+        blockInfo.append("BEGIN BLOCK\n");
+        blockInfo.append("BEGIN HEADER:\n");
+        blockInfo.append("Previous Header: ").append(prevHeader).append("\n");
+        blockInfo.append("Merkle Root: ").append(root).append("\n");
+        blockInfo.append("Timestamp: ").append(timeStamp).append("\n");
+        blockInfo.append("Difficulty Target: ").append(difficultyTarget).append("\n");
+        blockInfo.append("Nonce: ").append(nonce).append("\n");
+        blockInfo.append("END HEADER\n");
+        if (printLedger) {
+            blockInfo.append("Ledger: ").append(map).append("\n");
+        }
+        blockInfo.append("END BLOCK\n\n");
+        return blockInfo.toString();
+    }
+
 }

@@ -1,1 +1,10 @@
-test
+BEGIN BLOCK
+BEGIN HEADER:
+Previous Header: 274e2aa2682fe7ee60b12ab00cc7d20da6cd3ad4cc3b456bcfb97700cfe58ade
+Merkle Root: 091f49a35a9006540614ae38db4e535f204225c531956f2a903a1dcde8ddbd11
+Timestamp: 1696467737
+Difficulty Target: 8
+Nonce: 1
+END HEADER
+END BLOCK
+
