@@ -171,6 +171,8 @@ public class Block {
 
     }
 
+
+    //I think we were suppoed to update the main in run.java instead of make a new main in this class
     public static void main(String[] args) throws Exception {
 
         Scanner scan = new Scanner(System.in);
@@ -180,7 +182,15 @@ public class Block {
         String[] inputFiles = inputFilesStr.split(" ");
 
         for (String inputFile : inputFiles) {
-            // Assuming getHeader() returns the header based on the last processed block
+            
+            //THIS IS WRONG
+            //This line is just setting prevHeader always to null
+            //This line is calling the class Block, not the actual previous block object
+            //which will always result in a null value
+            //Fix by making the first block header = 0
+            //then for the following block, go to the original block
+            //and take its header and set it to prevHeader
+            // String prevHeader = originalBlock.header
             String prevHeader = Block.getHeader();
 
             // Get the root for the current input file
@@ -226,6 +236,51 @@ public class Block {
         }
         blockInfo.append("END BLOCK\n\n");
         return blockInfo.toString();
+    }
+
+    // run "varibleBlock.blockValidation()" to see if your block is right
+    public boolean blockValidation(){
+        ArrayList<Node> calulatedLeafNode = MerkleRoot.LeafNodes(map);
+        // get merkle tree and find the merkle root
+        Node merkleRoot = MerkleRoot.getMerkleRoot(calulatedLeafNode);
+        String calculatedMerkleRoot = merkleRoot.hash;
+
+
+        //if the calculated merkel root matches the blocks merkel root return true
+        //If the block was created properly, this will always pass
+        //we will have to purposely make false blocks to make this fail
+        if (calculatedMerkleRoot.equals(root)){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    public boolean checkBlockChain(ArrayList<Block> blockChain){
+        int size = blockChain.size();
+
+        //if the blockchain is only one block, no need to check prev blocks
+        if (size == 1){
+            return blockChain.get(0).blockValidation();
+        }
+
+        for (int i = 1; i <= size -1 ; i++ ){
+
+            //if the previous header doesnt equal the last blocks header
+            if (blockChain.get(i).prevHeader != blockChain.get(i-1).header){
+                return false;
+            }
+            //if blocks hash doesnt match properly/ ist valid return false
+            if (!blockChain.get(i).blockValidation()){
+                return false;
+            }
+
+        }
+
+       // if whole chain is valid return true
+       return true; 
     }
 
 }
