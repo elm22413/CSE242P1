@@ -175,6 +175,7 @@ public class Block {
     //I think we were suppoed to update the main in run.java instead of make a new main in this class
     public static void main(String[] args) throws Exception {
 
+        ArrayList<Block> blockChain= new ArrayList<>();
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the names of the input files separated by spaces: ");
         String inputFilesStr = scan.nextLine();
@@ -198,8 +199,14 @@ public class Block {
 
             // Create a new block
             Block block = new Block(prevHeader, root, 8, inputFile);
+
+            //add to blockchain
+            blockChain.add(block);
             // Print the block
             block.printBlock(true);
+           
+            //check the address
+           System.out.println(block.balance("address",blockChain));
 
             // Create the output file name
             try {
@@ -219,6 +226,8 @@ public class Block {
         }
 
         scan.close();
+
+
     }
 
     public String getBlockInfo(boolean printLedger) {
@@ -280,7 +289,51 @@ public class Block {
         }
 
        // if whole chain is valid return true
-       return true; 
+    return true;
     }
+
+    //fucntion that runs through the blockchain and finds the balance associated with an address
+    public String balance(String address, ArrayList<Block> blockChain) {
+        int blockSize= blockChain.size()-1;
+        System.out.println(blockSize);
+        
+        //start with newest block in the chain
+        for (int i = blockSize; i >= 0; i--) {
+            Block b = blockChain.get(i);
+
+            //call the find Address method to chcek
+        if(b.findAddress(address, b))
+           {
+            String blockBalance=b.map.get(address);
+
+            ArrayList<String> proofOfMembership = new ArrayList<>();
+            //PROOF OF MEMBERSHIP GOES HERE
+            Node leafNode = new Node(address, blockBalance);
+
+            // hash leaf node
+            proofOfMembership.add(leafNode.hash);
+
+            //CONTINUE TO HASH SIBLINGS-PARENTS-PARETNS' SIBLINGS UNTIL WE GET TO MERKLE ROOT
+            //work our way up the merkel root and hash to proofOfMembership
+            //How do we access subling Nodes?
+
+
+
+            return "Address: " + address + ", Balance: " + blockBalance;
+           }
+        }
+        return "Address " + address + " is not in this blockchain";
+
+}
+
+//boolean function to confirm if address is in the specific block or not
+    public boolean findAddress(String address, Block b) {
+        
+        
+        if (b.map.containsKey(address)) {
+            return true;
+    }
+    return false;
+}
 
 }

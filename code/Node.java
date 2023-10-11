@@ -73,9 +73,6 @@ class Node {
 
 
 class MerkleRoot{
-
-
-
     //take a file called filename and returns a map of the address and balance on each line
     public static Map<String, String> InputToMap(String filename) throws Exception{
 
