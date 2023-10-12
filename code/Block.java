@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class Block {
-
+    static ArrayList<Block> blockChain = new ArrayList<>();
     // Information for the current header
     String prevHeader;
     String root;
@@ -171,11 +171,10 @@ public class Block {
 
     }
 
-
-    //I think we were suppoed to update the main in run.java instead of make a new main in this class
+    // I think we were suppoed to update the main in run.java instead of make a new
+    // main in this class
     public static void main(String[] args) throws Exception {
 
-        ArrayList<Block> blockChain= new ArrayList<>();
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the names of the input files separated by spaces: ");
         String inputFilesStr = scan.nextLine();
@@ -183,15 +182,7 @@ public class Block {
         String[] inputFiles = inputFilesStr.split(" ");
 
         for (String inputFile : inputFiles) {
-            
-            //THIS IS WRONG
-            //This line is just setting prevHeader always to null
-            //This line is calling the class Block, not the actual previous block object
-            //which will always result in a null value
-            //Fix by making the first block header = 0
-            //then for the following block, go to the original block
-            //and take its header and set it to prevHeader
-            // String prevHeader = originalBlock.header
+
             String prevHeader = Block.getHeader();
 
             // Get the root for the current input file
@@ -199,14 +190,14 @@ public class Block {
 
             // Create a new block
             Block block = new Block(prevHeader, root, 8, inputFile);
-
-            //add to blockchain
+            ArrayList<Block> blockChain = new ArrayList<>();
+            // add to blockchain
             blockChain.add(block);
             // Print the block
             block.printBlock(true);
-           
-            //check the address
-           System.out.println(block.balance("address",blockChain));
+
+            // check the address
+            System.out.println(block.balance("address", blockChain));
 
             // Create the output file name
             try {
@@ -226,7 +217,6 @@ public class Block {
         }
 
         scan.close();
-
 
     }
 
@@ -248,92 +238,132 @@ public class Block {
     }
 
     // run "varibleBlock.blockValidation()" to see if your block is right
-    public boolean blockValidation(){
+    public boolean blockValidation() {
         ArrayList<Node> calulatedLeafNode = MerkleRoot.LeafNodes(map);
         // get merkle tree and find the merkle root
         Node merkleRoot = MerkleRoot.getMerkleRoot(calulatedLeafNode);
         String calculatedMerkleRoot = merkleRoot.hash;
 
-
-        //if the calculated merkel root matches the blocks merkel root return true
-        //If the block was created properly, this will always pass
-        //we will have to purposely make false blocks to make this fail
-        if (calculatedMerkleRoot.equals(root)){
+        // if the calculated merkel root matches the blocks merkel root return true
+        // If the block was created properly, this will always pass
+        // we will have to purposely make false blocks to make this fail
+        if (calculatedMerkleRoot.equals(root)) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-
-    public boolean checkBlockChain(ArrayList<Block> blockChain){
+    public boolean checkBlockChain(ArrayList<Block> blockChain) {
         int size = blockChain.size();
 
-        //if the blockchain is only one block, no need to check prev blocks
-        if (size == 1){
+        // if the blockchain is only one block, no need to check prev blocks
+        if (size == 1) {
             return blockChain.get(0).blockValidation();
         }
 
-        for (int i = 1; i <= size -1 ; i++ ){
+        for (int i = 1; i <= size - 1; i++) {
 
-            //if the previous header doesnt equal the last blocks header
-            if (blockChain.get(i).prevHeader != blockChain.get(i-1).header){
+            // if the previous header doesnt equal the last blocks header
+            if (blockChain.get(i).prevHeader != blockChain.get(i - 1).header) {
                 return false;
             }
-            //if blocks hash doesnt match properly/ ist valid return false
-            if (!blockChain.get(i).blockValidation()){
+            // if blocks hash doesnt match properly/ ist valid return false
+            if (!blockChain.get(i).blockValidation()) {
                 return false;
             }
 
         }
 
-       // if whole chain is valid return true
-    return true;
+        // if whole chain is valid return true
+        return true;
     }
 
-    //fucntion that runs through the blockchain and finds the balance associated with an address
+    // fucntion that runs through the blockchain and finds the balance associated
+    // with an address
     public String balance(String address, ArrayList<Block> blockChain) {
-        int blockSize= blockChain.size()-1;
+        int blockSize = blockChain.size() - 1;
         System.out.println(blockSize);
-        
-        //start with newest block in the chain
+
+        // start with newest block in the chain
         for (int i = blockSize; i >= 0; i--) {
             Block b = blockChain.get(i);
 
-            //call the find Address method to chcek
-        if(b.findAddress(address, b))
-           {
-            String blockBalance=b.map.get(address);
+            // call the findAddress method to check
+            if (b.findAddress(address, b)) {
+                String blockBalance = b.map.get(address);
 
-            ArrayList<String> proofOfMembership = new ArrayList<>();
-            //PROOF OF MEMBERSHIP GOES HERE
-            Node leafNode = new Node(address, blockBalance);
+                ArrayList<String> proofOfMembership = b.getProofOfMembership(address);
+                // Now, you can utilize the proofOfMembership list however you deem necessary
 
-            // hash leaf node
-            proofOfMembership.add(leafNode.hash);
-
-            //CONTINUE TO HASH SIBLINGS-PARENTS-PARETNS' SIBLINGS UNTIL WE GET TO MERKLE ROOT
-            //work our way up the merkel root and hash to proofOfMembership
-            //How do we access subling Nodes?
-
-
-
-            return "Address: " + address + ", Balance: " + blockBalance;
-           }
+                return "Address: " + address + ", Balance: " + blockBalance + ", Proof: "
+                        + proofOfMembership.toString();
+            }
         }
         return "Address " + address + " is not in this blockchain";
+    }
 
-}
-
-//boolean function to confirm if address is in the specific block or not
+    // boolean function to confirm if address is in the specific block or not
     public boolean findAddress(String address, Block b) {
-        
-        
+
         if (b.map.containsKey(address)) {
             return true;
+        }
+        return false;
     }
-    return false;
-}
+
+    public static ArrayList<String> searchBlockchainForAddress(String address, ArrayList<Block> blockChain) {
+        for (int i = blockChain.size() - 1; i >= 0; i--) {
+            Block currentBlock = blockChain.get(i);
+            if (currentBlock.map.containsKey(address)) {
+                return currentBlock.getProofOfMembership(address);
+            }
+        }
+        return null;
+    }
+
+    public ArrayList<String> getProofOfMembership(String address) {
+        ArrayList<String> proof = new ArrayList<>();
+
+        if (!map.containsKey(address)) {
+            return proof; // Return empty list if address not present
+        }
+
+        String leafHash = hash(address + map.get(address)); // Simulating the hashing of a leaf node for this address
+        proof.add(leafHash);
+
+        ArrayList<Node> currentLevel = MerkleRoot.LeafNodes(map); // Assuming LeafNodes gives back the list of leaf
+                                                                  // nodes
+        Node currentNode = new Node(address, map.get(address)); // Create a node for the address
+
+        while (currentLevel.size() > 1) { // Until we reach the root
+            ArrayList<Node> nextLevel = new ArrayList<>();
+
+            for (int i = 0; i < currentLevel.size(); i += 2) {
+                Node left = currentLevel.get(i);
+                Node right = (i + 1 < currentLevel.size()) ? currentLevel.get(i + 1) : left; // Duplicate the last node
+                                                                                             // if odd number
+
+                // Check if the current node is on the left or right
+                if (left.hash.equals(currentNode.hash) || right.hash.equals(currentNode.hash)) {
+                    if (left.hash.equals(currentNode.hash)) {
+                        proof.add(right.hash);
+                    } else {
+                        proof.add(left.hash);
+                    }
+
+                    currentNode = new Node(left.hash + right.hash); // Combine and move up
+                }
+
+                Node parent = new Node(left.hash + right.hash); // This is a simplistic combination, might differ in
+                                                                // actual implementation
+                nextLevel.add(parent);
+            }
+
+            currentLevel = nextLevel; // Move up the tree
+        }
+
+        return proof;
+    }
 
 }

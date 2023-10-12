@@ -7,179 +7,212 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-
 //Referenced https://www.geeksforgeeks.org/sha-256-hash-in-java/
 
-
 class Node {
-    
+
     String address;
     String balance;
     String hash;
-    
 
-    //Sets address balance and hash
-    public Node(String address, String balance){
+    // Sets address balance and hash
+    public Node(String address, String balance) {
         this.address = address;
         this.balance = balance;
-        //concat address and balance into one string
+        // concat address and balance into one string
         String concat = address.concat(balance);
         hash = hash(concat);
     }
 
+    public Node(String hash) {
+        this.hash = hash;
+    }
 
-    //Referenced https://www.geeksforgeeks.org/sha-256-hash-in-java/
-    //takes a string and uses SHA-256 to hash
-    public static String hash(String s){
-
+    // Referenced https://www.geeksforgeeks.org/sha-256-hash-in-java/
+    // takes a string and uses SHA-256 to hash
+    public static String hash(String s) {
 
         MessageDigest md;
-        try{
+        try {
             md = MessageDigest.getInstance("SHA-256");
-        
+
             byte[] bytes = md.digest(s.getBytes(StandardCharsets.UTF_8));
 
-            //convert the bytes to signum representation
+            // convert the bytes to signum representation
             BigInteger number = new BigInteger(1, bytes);
 
             // Convert message digest into hex value
             StringBuilder hexString = new StringBuilder(number.toString(16));
-    
+
             // Pad with leading zeros
-            while (hexString.length() < 64)
-            {
+            while (hexString.length() < 64) {
                 hexString.insert(0, '0');
             }
-            //return hash
+            // return hash
             return hexString.toString();
-            
-        }catch(Exception e){
+
+        } catch (Exception e) {
             System.out.println("error making instance from messgae digest: " + e);
             return s;
         }
-
-        
-
-        
-
 
     }
 
 }
 
+class MerkleRoot {
+    // take a file called filename and returns a map of the address and balance on
+    // each line
+    public static Map<String, String> InputToMap(String filename) throws Exception {
 
-
-
-
-
-class MerkleRoot{
-    //take a file called filename and returns a map of the address and balance on each line
-    public static Map<String, String> InputToMap(String filename) throws Exception{
-
-        //instance of map that will put the address and integer into hashmap for later use of making leaf
+        // instance of map that will put the address and integer into hashmap for later
+        // use of making leaf
         Map<String, String> map = new HashMap<String, String>();
 
-        try(BufferedReader read = new BufferedReader(new FileReader(filename))){ //try to read the file
-            String line = read.readLine(); //start reading first line
-            while(line != null){ //while there is another line
-                String[] split = line.split(" "); //split the line by a space 
-                String address = split[0]; //get the address
-                String balance = split[1]; //get the balance 
-                map.put(address, balance); //put the address and balance into the map
-                line = read.readLine(); //read the next line 
+        try (BufferedReader read = new BufferedReader(new FileReader(filename))) { // try to read the file
+            String line = read.readLine(); // start reading first line
+            while (line != null) { // while there is another line
+                String[] split = line.split(" "); // split the line by a space
+                String address = split[0]; // get the address
+                String balance = split[1]; // get the balance
+                map.put(address, balance); // put the address and balance into the map
+                line = read.readLine(); // read the next line
             }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             System.out.println("There was an error while reading file: " + e);
         }
 
         return map;
     }
 
-    //takes a map and returns an arraylist of nodes
-    public static ArrayList<Node> LeafNodes(Map<String, String> map){
+    // takes a map and returns an arraylist of nodes
+    public static ArrayList<Node> LeafNodes(Map<String, String> map) {
 
-        //instance of arraylist that will hold the nodes
+        // instance of arraylist that will hold the nodes
         ArrayList<Node> leafNodes = new ArrayList<Node>();
 
-        //for each key in the map
-        for(String key : map.keySet()){
-            //get the address and balance
+        // for each key in the map
+        for (String key : map.keySet()) {
+            // get the address and balance
             String address = key;
             String balance = map.get(key);
-            //make a new node with the address and balance
-            Node node = new Node(address, balance); //hashes it aswell
-            //add the node to the arraylist
+            // make a new node with the address and balance
+            Node node = new Node(address, balance); // hashes it aswell
+            // add the node to the arraylist
             leafNodes.add(node);
         }
 
         return leafNodes;
     }
 
-    //takes an arraylist of nodes and returns the root by going through and making new arraylists of parent nodes until there is only one node left
-    public static Node getMerkleRoot(ArrayList<Node> leafNodes){
+    // takes an arraylist of nodes and returns the root by going through and making
+    // new arraylists of parent nodes until there is only one node left
+    public static Node getMerkleRoot(ArrayList<Node> leafNodes) {
 
-        //instance of arraylist that will hold the parent nodes
+        // instance of arraylist that will hold the parent nodes
         ArrayList<Node> parentNodes = new ArrayList<Node>();
 
-        while(leafNodes.size() > 1){ //while there is more than one node in the leaf nodes 
-            //for each node in the leaf nodes
-           // System.out.println(leafNodes.size());
-            for(int i = 0; i < leafNodes.size(); i+=2){
+        while (leafNodes.size() > 1) { // while there is more than one node in the leaf nodes
+            // for each node in the leaf nodes
+            // System.out.println(leafNodes.size());
+            for (int i = 0; i < leafNodes.size(); i += 2) {
 
-                //if there is another node after the current node
-                if(i+1 < leafNodes.size()){
+                // if there is another node after the current node
+                if (i + 1 < leafNodes.size()) {
 
-                    //get the current node and the next node
+                    // get the current node and the next node
                     Node node1 = leafNodes.get(i);
-                    Node node2 = leafNodes.get(i+1);
+                    Node node2 = leafNodes.get(i + 1);
 
-                    //concat the hashes of the two nodes
+                    // concat the hashes of the two nodes
                     String concat = node1.hash.concat(node2.hash);
 
-                    //hash the concat
+                    // hash the concat
                     String hashedParent = Node.hash(concat);
 
-                    //make a new node with the hash
+                    // make a new node with the hash
                     Node parentNode = new Node("", "");
                     parentNode.hash = hashedParent;
 
-                    //add the node to the parent nodes
+                    // add the node to the parent nodes
                     parentNodes.add(parentNode);
                 }
-                //if there is not another node after the current node
-                else{
-                    //get the current node
+                // if there is not another node after the current node
+                else {
+                    // get the current node
                     Node node1 = leafNodes.get(i);
 
-                    //concat the hash of the current node with itself
+                    // concat the hash of the current node with itself
                     String concat2 = node1.hash.concat(node1.hash);
 
-                    //hash the concat
+                    // hash the concat
                     String hashParent2 = Node.hash(concat2);
 
-                    //make a new node with the hash
+                    // make a new node with the hash
                     Node parentNode = new Node("", "");
                     parentNode.hash = hashParent2;
 
-                    //add the node to the parent nodes
+                    // add the node to the parent nodes
                     parentNodes.add(parentNode);
                 }
             }
-            leafNodes = parentNodes; //set the leaf nodes to the parent nodes
-            parentNodes = new ArrayList<Node>(); //make a new arraylist for the parent nodes
+            leafNodes = parentNodes; // set the leaf nodes to the parent nodes
+            parentNodes = new ArrayList<Node>(); // make a new arraylist for the parent nodes
 
-        }   
-        return leafNodes.get(0); //return the root
+        }
+        return leafNodes.get(0); // return the root
 
- 
     }
 
+    public static ArrayList<String> generateProofOfMembership(ArrayList<Node> leafNodes, String address) {
+        ArrayList<String> proof = new ArrayList<>();
 
+        // Find the index of the node with the given address
+        int index = -1;
+        for (int i = 0; i < leafNodes.size(); i++) {
+            if (leafNodes.get(i).address.equals(address)) {
+                index = i;
+                break;
+            }
+        }
 
+        if (index == -1)
+            return null; // Address not found
 
+        ArrayList<Node> currentLevelNodes = new ArrayList<>(leafNodes);
 
+        while (currentLevelNodes.size() > 1) {
+            ArrayList<Node> parentLevelNodes = new ArrayList<>();
 
+            for (int i = 0; i < currentLevelNodes.size(); i += 2) {
+                Node left = currentLevelNodes.get(i);
+                Node right = (i + 1 < currentLevelNodes.size()) ? currentLevelNodes.get(i + 1) : left; // Handle odd
+                                                                                                       // number of
+                                                                                                       // nodes
+
+                if (i == index || i + 1 == index) {
+                    // One of these nodes is our target; we add the other one to the proof
+                    proof.add((i == index) ? right.hash : left.hash);
+                }
+
+                // Create the parent hash, similar to your getMerkleRoot method
+                String combinedHash = left.hash.concat(right.hash);
+                String parentHash = Node.hash(combinedHash);
+
+                Node parentNode = new Node("", "");
+                parentNode.hash = parentHash;
+
+                parentLevelNodes.add(parentNode);
+            }
+
+            // Update index for the next level
+            index = index / 2;
+
+            // Move up the tree
+            currentLevelNodes = parentLevelNodes;
+        }
+
+        return proof;
+    }
 
 }
-
